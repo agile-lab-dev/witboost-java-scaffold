@@ -1,0 +1,188 @@
+include:
+  - project: 'AgileFactory/Witboost.Mesh/witboost.Mesh.CI'
+    ref: 'main'
+    file: 'common/witboost.helm.gitlab-ci.yml'
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+
+image: maven:3.9.0-eclipse-temurin-17
+
+variables:
+  MAVEN_CLI_OPTS: "-s settings.xml --batch-mode"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+cache:
+  paths:
+    - .m2/repository/
+
+stages:
+  - setup
+  - compile
+  - test
+  - coverage
+  - package
+  - publish
+
+setup:
+  stage: setup
+  extends: .witboost.helm.base-job
+  cache: []
+  before_script: []
+  script:
+    - !reference [.witboost.helm.clone-scripts, script]
+    - !reference [.witboost.helm.get-version, script]
+    - echo "VERSION=${VERSION}" >> vars.env
+    - echo "PROVISIONER_VERSION=${VERSION}" >> vars.env
+  artifacts:
+    reports:
+      dotenv: vars.env
+
+sast:
+  stage: setup
+  artifacts:
+    paths:
+      - gl-sast-report.json
+    reports:
+      sast: gl-sast-report.json
+
+secret_detection:
+  stage: setup
+  artifacts:
+    paths:
+      - gl-secret-detection-report.json
+    reports:
+      secret_detection: gl-secret-detection-report.json
+
+fail_on_detection:
+  needs:
+    - semgrep-sast
+    - secret_detection
+  before_script:
+    - apt update -y && apt -y install jq
+  script:
+    - ls -a
+    - jq '.vulnerabilities[] | .severity' gl-sast-report.json | grep 'High\|Critical' && echo 'Vulnerabilities found in gl-sast-report.json' && exit 1 || true;
+    - jq '.vulnerabilities[] | .severity' gl-secret-detection-report.json | grep 'High\|Critical' && echo 'Vulnerabilities found in gl-secret-detection-report.json' && exit 1 || true;
+    - echo 'No serious vulnerabilities found.'
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - '**/*.py'
+        - '**/*.js'
+        - '**/*.jsx'
+        - '**/*.ts'
+        - '**/*.tsx'
+        - '**/*.c'
+        - '**/*.go'
+        - '**/*.java'
+        - '**/*.cs'
+        - '**/*.html'
+        - '**/*.scala'
+        - '**/*.sc'
+
+vulnerability_analysis:
+  stage: compile
+  before_script:
+    - mvn --version
+  script:
+    - mvn org.owasp:dependency-check-maven:check
+  artifacts:
+    when: always
+    paths:
+      - target/dependency-check-report.html
+
+license_check:
+  stage: compile
+  before_script:
+    - mvn --version
+  script:
+    - mvn licensescan:audit
+  artifacts:
+    when: always
+    paths:
+      - target/license-scan-results/index.html
+
+linter:
+  stage: compile
+  before_script:
+    - mvn --version
+  script:
+    - mvn checkstyle:check
+    - mvn spotless:check
+
+compile:
+  stage: compile
+  script:
+    - mvn $MAVEN_CLI_OPTS compile
+
+test-jdk17:
+  stage: test
+  script:
+    - mvn $MAVEN_CLI_OPTS org.jacoco:jacoco-maven-plugin:prepare-agent test jacoco:report-aggregate
+  artifacts:
+    paths:
+      - target/site/jacoco/jacoco.xml
+
+#coverage-jdk11:
+#  stage: coverage
+#  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.9
+#  script:
+#    - python /opt/cover2cover.py target/site/jacoco/jacoco.xml
+#    - $CI_PROJECT_DIR/src/main/java/ > target/site/cobertura.xml
+#  needs: ["test-jdk11"]
+#  artifacts:
+#    reports:
+#      coverage_report:
+#        coverage_format: cobertura
+#        path: target/site/cobertura.xml
+#    rules:
+#      - exists:
+#          - target/site/cobertura.xml
+#      - when: always
+
+package:
+  stage: package
+  script:
+    - mvn $MAVEN_CLI_OPTS package
+  artifacts:
+    paths:
+      - common/target/*.jar
+
+publish:
+  stage: publish
+  script:
+    - mvn deploy -s ci_settings.xml
+
+docker_build:
+  stage: publish
+  image: docker:23.0.0
+  services:
+    - docker:23.0.0-dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE:$VERSION .
+    - docker push $CI_REGISTRY_IMAGE:$VERSION
+
+container_scanning:
+  stage: publish
+  variables:
+    GIT_STRATEGY: fetch
+    CS_DOCKERFILE_PATH: .
+    CS_IMAGE: $CI_REGISTRY_IMAGE
+  needs:
+    - docker_build
+
+check_vulnerabilities_analysis:
+  stage: publish
+  before_script:
+    - apt update -y && apt -y install jq
+  script:
+    - ls -a
+    - jq '.vulnerabilities[] | .severity' gl-container-scanning-report.json | grep 'High\|Critical' && echo 'Vulnerabilities found in gl-container-scanning-report.json' && exit 1|| true;
+    - jq '.vulnerabilities[] | .severity' gl-dependency-scanning-report.json | grep 'High\|Critical' && echo 'Vulnerabilities found in gl-dependency-scanning-report.json' && exit 1|| true;
+    - echo 'No serious vulnerabilities found.'
+  needs:
+    - container_scanning
+  rules:
+    - if: $CI_COMMIT_BRANCH
