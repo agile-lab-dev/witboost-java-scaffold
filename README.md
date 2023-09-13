@@ -96,6 +96,8 @@ pre-commit install
 
 **Build:**
 
+The scaffold uses the `openapi-generator` Maven plugin to generate the API endpoints from the interface specification located in `src/main/resources/interface-specification.yml`. For more information on the documentation, check [API docs](docs/API.md).
+
 ```bash
 mvn compile
 ```
@@ -118,7 +120,7 @@ mvn spotbugs:check
 mvn test
 ```
 
-**Artifacts & Docker image:** the project leverages Maven for packaging. Build artifacts (normal and fat jar)  with:
+**Artifacts & Docker image:** the project leverages Maven for packaging. Build artifacts (normal and fat jar) with:
 
 ```bash
 mvn package spring-boot:repackage
@@ -139,6 +141,14 @@ export PROVISIONER_VERSION=$(date +%Y%m%d-%H%M%S);
 
 **CI/CD:** the pipeline is based on GitLab CI as that's what we use internally. It's configured by the `.gitlab-ci.yaml` file in the root of the repository. You can use that as a starting point for your customizations.
 
+### Implementing server logic
+
+The Java Scaffold utilizes the `openapi-generator` Maven plugin to generate the Spring endpoint methods from the interface specification located in `src/main/resources/interface-specification.yml`. The files are generated at compile/build time, so they can't be modified as they'd be rewritten everytime you build the application. You can find the generated sources at `common/target/generated-sources/openapi/src/main/java`.
+
+The generated files include one Java interface per each existing endpoint version. That is, for `/v1` endpoints it will generate the `V1ApiDelegate.java` interface containing all endpoints starting with `/v1`, for `/v2` the `V2ApiDelegate.java` and so on. The interface defaults the endpoints to answer with 501 Not Implemented unless overridden. We provide a class `it.agilelab.witboost.javascaffold.controller.SpecificProvisionerController` as an example class with one overridden method. To implement the specific provisioner logic, implement the necessary methods and start developing.
+
+Exceptions are handled using Spring `@RestControllerAdvice` annotation. We provide a basic implementation on `it.agilelab.witboost.javascaffold.controller.SpecificProvisionerExceptionHandler` which handles both business and runtime exceptions, but be free to modify this exception handler based on your business requirements.
+
 ## Running
 
 To run the server locally, use:
@@ -148,6 +158,8 @@ mvn -pl common spring-boot:run
 ```
 
 By default, the server binds to port `8888` on localhost. After it's up and running you can make provisioning requests to this address. You can access the running application [here](http://127.0.0.1:8888).
+
+SwaggerUI is configured and hosted on the path `/docs`. You can access it [here](http://127.0.0.1:8888/docs)
 
 ## Deploying
 

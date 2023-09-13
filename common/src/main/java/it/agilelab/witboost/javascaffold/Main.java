@@ -1,4 +1,4 @@
-package it.agilelab.witboost;
+package it.agilelab.witboost.javascaffold;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
