@@ -1,8 +1,8 @@
 package it.agilelab.witboost.javascaffold.controller;
 
 import it.agilelab.witboost.javascaffold.common.SpecificProvisionerValidationException;
+import it.agilelab.witboost.javascaffold.openapi.model.RequestValidationError;
 import it.agilelab.witboost.javascaffold.openapi.model.SystemError;
-import it.agilelab.witboost.javascaffold.openapi.model.ValidationError;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -23,10 +23,10 @@ public class SpecificProvisionerExceptionHandler {
 
     @ExceptionHandler({SpecificProvisionerValidationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    protected ValidationError handleConflict(SpecificProvisionerValidationException ex) {
+    protected RequestValidationError handleConflict(SpecificProvisionerValidationException ex) {
         List<String> list = new ArrayList<>();
         list.add(ex.getMessage());
-        return new ValidationError(list);
+        return new RequestValidationError(list);
     }
 
     @ExceptionHandler({RuntimeException.class})
