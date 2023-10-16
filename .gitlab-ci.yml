@@ -6,7 +6,7 @@ include:
   - template: Security/Secret-Detection.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
 
-image: maven:3.9.0-eclipse-temurin-17
+image: maven:3.9.4-eclipse-temurin-17
 
 variables:
   MAVEN_CLI_OPTS: "-s settings.xml --batch-mode"
@@ -164,14 +164,23 @@ docker_build:
     - docker build -t $CI_REGISTRY_IMAGE:$VERSION .
     - docker push $CI_REGISTRY_IMAGE:$VERSION
 
+helm_package:
+  stage: publish
+  extends: .witboost.helm.deploy
+  needs:
+    - docker_build
+
 container_scanning:
   stage: publish
   variables:
     GIT_STRATEGY: fetch
     CS_DOCKERFILE_PATH: .
-    CS_IMAGE: $CI_REGISTRY_IMAGE
+    CS_IMAGE: $CI_REGISTRY_IMAGE:$VERSION
   needs:
+    - setup
     - docker_build
+  dependencies:
+    - setup
 
 check_vulnerabilities_analysis:
   stage: publish
