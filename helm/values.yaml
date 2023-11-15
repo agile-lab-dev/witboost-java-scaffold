@@ -28,7 +28,7 @@ otel:
 # -- define extra variables to add to the container(s)
 # e.g:
 # extraEnvVars:
-#   - name: FOO
+#   - name: FOO
 #     value: "10"
 extraEnvVars: []
 
