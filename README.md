@@ -30,7 +30,7 @@ You can learn more about how the Specific Provisioners fit in the broader pictur
 
 ### Software stack
 
-This microservice is written in Java 11, using SpringBoot for the HTTP layer. Project is built with Apache Maven and supports packaging and Docker image, ideal for Kubernetes deployments (which is the preferred option).
+This microservice is written in Java 17, using SpringBoot for the HTTP layer. Project is built with Apache Maven and supports packaging and Docker image, ideal for Kubernetes deployments (which is the preferred option).
 
 
 ### Git hooks

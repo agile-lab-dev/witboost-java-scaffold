@@ -2,6 +2,9 @@
 
 You can use the below instructions if you want to run your app as a docker image.
 
+The docker image uses a bash script (`run_app.sh` located in the root folder) to execute the provisioner jar. If you're implementing your own provisioner, be sure to modify the name of the jar that is being executed, otherwise the docker image will fail to find your application jar, and it won't start.
+
+> **Warning:** Don't use the wildcard statement `*.jar` as the order of the jar expansion is not deterministic.
 
 ### Build Docker image
 
