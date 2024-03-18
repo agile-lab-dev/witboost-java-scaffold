@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://www.agilelab.it/witboost">
-        <img src="docs/img/witboost_light.png" alt="witboost" width=600 >
+        <img src="docs/img/witboost_logo.svg" alt="witboost" width=600 >
     </a>
 </p>
 
@@ -94,6 +94,12 @@ pre-commit install
 - Java 17
 - Apache Maven 3.9+
 
+**Version:** the version is set dynamically via an environment variable, `PROVISIONER_VERSION`. Make sure you have it exported, even for local development. Example:
+
+```bash
+export PROVISIONER_VERSION=0.0.0-SNAPHSOT
+```
+
 **Build:**
 
 The scaffold uses the `openapi-generator` Maven plugin to generate the API endpoints from the interface specification located in `src/main/resources/interface-specification.yml`. For more information on the documentation, check [API docs](docs/API.md).
@@ -173,7 +179,7 @@ This project is available under the [Apache License, Version 2.0](https://openso
 
 <p align="center">
     <a href="https://www.agilelab.it">
-        <img src="docs/img/agilelab_logo.jpg" alt="Agile Lab" width=600>
+        <img src="docs/img/agilelab_logo.svg" alt="Agile Lab" width=600>
     </a>
 </p>
 

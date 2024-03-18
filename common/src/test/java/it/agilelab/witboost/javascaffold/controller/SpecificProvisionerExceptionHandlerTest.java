@@ -1,9 +1,11 @@
 package it.agilelab.witboost.javascaffold.controller;
 
+import it.agilelab.witboost.javascaffold.common.FailedOperation;
+import it.agilelab.witboost.javascaffold.common.Problem;
 import it.agilelab.witboost.javascaffold.common.SpecificProvisionerValidationException;
 import it.agilelab.witboost.javascaffold.openapi.model.RequestValidationError;
 import it.agilelab.witboost.javascaffold.openapi.model.SystemError;
-import java.util.List;
+import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,27 +17,31 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 @WebMvcTest(SpecificProvisionerExceptionHandler.class)
 public class SpecificProvisionerExceptionHandlerTest {
 
-    @InjectMocks SpecificProvisionerExceptionHandler specificProvisionerExceptionHandler;
+    @InjectMocks
+    SpecificProvisionerExceptionHandler specificProvisionerExceptionHandler;
 
     @Test
     void testHandleConflictSystemError() {
-
         RuntimeException runtimeException = new RuntimeException();
+        String expectedError =
+                "An unexpected error occurred while processing the request. Please try again later. If the issue still persists, contact the platform team for assistance! Details: ";
 
-        SystemError error = specificProvisionerExceptionHandler.handleConflict(runtimeException);
+        SystemError error = specificProvisionerExceptionHandler.handleSystemError(runtimeException);
 
-        Assertions.assertNull(error.getError());
+        Assertions.assertTrue(error.getError().startsWith(expectedError));
     }
 
     @Test
     void testHandleConflictRequestValidationError() {
-
+        String expectedError = "Validation error";
         SpecificProvisionerValidationException specificProvisionerValidationException =
-                new SpecificProvisionerValidationException("");
+                new SpecificProvisionerValidationException(
+                        new FailedOperation(Collections.singletonList(new Problem(expectedError))));
 
         RequestValidationError requestValidationError =
-                specificProvisionerExceptionHandler.handleConflict(specificProvisionerValidationException);
+                specificProvisionerExceptionHandler.handleValidationException(specificProvisionerValidationException);
 
-        Assertions.assertEquals(requestValidationError.getErrors(), List.of(""));
+        Assertions.assertEquals(1, requestValidationError.getErrors().size());
+        requestValidationError.getErrors().forEach(e -> Assertions.assertEquals(expectedError, e));
     }
 }

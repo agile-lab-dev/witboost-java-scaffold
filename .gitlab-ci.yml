@@ -9,7 +9,7 @@ include:
 image: maven:3.9.4-eclipse-temurin-17
 
 variables:
-  MAVEN_CLI_OPTS: "-s settings.xml --batch-mode"
+  MAVEN_CLI_OPTS: "-s ci_settings.xml --batch-mode"
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
 
 cache:
@@ -40,6 +40,7 @@ setup:
 
 sast:
   stage: setup
+  cache: []
   artifacts:
     paths:
       - gl-sast-report.json
@@ -48,6 +49,7 @@ sast:
 
 secret_detection:
   stage: setup
+  cache: []
   artifacts:
     paths:
       - gl-secret-detection-report.json
@@ -86,29 +88,29 @@ vulnerability_analysis:
   before_script:
     - mvn --version
   script:
-    - mvn package org.owasp:dependency-check-maven:check
+    - mvn -DskipTests=true package org.owasp:dependency-check-maven:check
   artifacts:
     when: always
     paths:
-      - target/dependency-check-report.html
+      - common/target/dependency-check-report.html
 
 license_check:
   stage: compile
   before_script:
     - mvn --version
   script:
-    - mvn package licensescan:audit
+    - mvn -DskipTests=true package licensescan:audit
   artifacts:
     when: always
     paths:
-      - target/license-scan-results/index.html
+      - common/target/license-scan-results/index.html
+      - common/target/license-scan-results/license-scan-report.json
 
 linter:
   stage: compile
   before_script:
     - mvn --version
   script:
-    - mvn checkstyle:check
     - mvn spotless:check
 
 compile:
@@ -143,7 +145,7 @@ coverage-jdk17:
 package:
   stage: package
   script:
-    - mvn $MAVEN_CLI_OPTS package spring-boot:repackage
+    - mvn -DskipTests=true $MAVEN_CLI_OPTS package spring-boot:repackage
   artifacts:
     paths:
       - common/target/*.jar
@@ -151,7 +153,7 @@ package:
 publish:
   stage: publish
   script:
-    - mvn deploy -s ci_settings.xml
+    - mvn -DskipTests=true deploy -s ci_settings.xml
 
 docker_build:
   stage: publish

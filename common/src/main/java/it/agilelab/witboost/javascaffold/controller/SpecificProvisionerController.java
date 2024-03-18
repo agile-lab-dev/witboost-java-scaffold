@@ -1,7 +1,9 @@
 package it.agilelab.witboost.javascaffold.controller;
 
+import it.agilelab.witboost.javascaffold.api.ApiServiceImpl;
 import it.agilelab.witboost.javascaffold.openapi.controller.V1ApiDelegate;
 import it.agilelab.witboost.javascaffold.openapi.model.ProvisioningRequest;
+import it.agilelab.witboost.javascaffold.openapi.model.ProvisioningStatus;
 import it.agilelab.witboost.javascaffold.openapi.model.ValidationResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,9 +17,25 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class SpecificProvisionerController implements V1ApiDelegate {
+
+    private final ApiServiceImpl apiService;
+
+    public SpecificProvisionerController(ApiServiceImpl apiService) {
+        this.apiService = apiService;
+    }
+
     @Override
-    public ResponseEntity<ValidationResult> validate(ProvisioningRequest provisioningRequest)
-            throws Exception {
-        return ResponseEntity.ok(new ValidationResult(true));
+    public ResponseEntity<ProvisioningStatus> provision(ProvisioningRequest provisioningRequest) {
+        return ResponseEntity.ok(apiService.provision(provisioningRequest));
+    }
+
+    @Override
+    public ResponseEntity<ProvisioningStatus> unprovision(ProvisioningRequest provisioningRequest) {
+        return ResponseEntity.ok(apiService.unprovision(provisioningRequest));
+    }
+
+    @Override
+    public ResponseEntity<ValidationResult> validate(ProvisioningRequest provisioningRequest) {
+        return ResponseEntity.ok(apiService.validate(provisioningRequest));
     }
 }

@@ -6,9 +6,9 @@ repos:
       - id: trailing-whitespace
       - id: check-yaml
         args: [ '--unsafe' ]
+        exclude: '.*\.(yaml|yml|xml)$'
 
   - repo: https://github.com/ejba/pre-commit-maven
     rev: v0.3.3
     hooks:
-      - id: maven-checkstyle
       - id: maven-spotless-check

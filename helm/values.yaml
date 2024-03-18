@@ -50,4 +50,5 @@ resources: {}
 # -- Allows you to specify common labels
 labels: {}
 
-
+# -- This configuration allows you to override the application.yml file
+configOverride:

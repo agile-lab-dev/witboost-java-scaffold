@@ -23,13 +23,17 @@ spec:
         - name: {{ .Values.dockerRegistrySecretName }}
       {{- end}}
       volumes:
+        - name: config
+          configMap:
+            name: {{ template "javasp.fullname" . }}-config
+            defaultMode: 420
       containers:
         - name: {{ .Chart.Name }}
           image: {{ .Values.image.registry }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 5002
+              containerPort: 8888
               protocol: TCP
           {{- if .Values.securityContext }}
           securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
@@ -48,6 +52,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: SPRING_CONFIG_LOCATION
+              value: file:/opt/docker/etc/configs/application.yml
             - name: OTEL_JAVAAGENT_ENABLED
               value: {{ quote .Values.otel.enabled }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -62,3 +68,5 @@ spec:
             {{- include "common.tplvalues.render" (dict "value" .Values.extraEnvVars "context" $) | nindent 12 }}
             {{- end }}
           volumeMounts:
+            - name: config
+              mountPath: /opt/docker/etc/configs
