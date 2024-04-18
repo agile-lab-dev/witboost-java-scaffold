@@ -19,7 +19,7 @@
 
     <packaging>pom</packaging>
 
-    <groupId>it.agilelab.witboost.mesh</groupId>
+    <groupId>it.agilelab.witboost</groupId>
     <artifactId>scaffold</artifactId>
     <version>${env.PROVISIONER_VERSION}</version>
 

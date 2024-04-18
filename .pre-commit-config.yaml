@@ -6,9 +6,13 @@ repos:
       - id: trailing-whitespace
       - id: check-yaml
         args: [ '--unsafe' ]
-        exclude: '.*\.(yaml|yml|xml)$'
+        types: [file, yaml]
 
-  - repo: https://github.com/ejba/pre-commit-maven
-    rev: v0.3.3
+  - repo: local
     hooks:
-      - id: maven-spotless-check
+      - id: maven-spotless
+        name: maven-spotless
+        entry: mvn spotless:check
+        language: system
+        types: [java]
+        pass_filenames: false
