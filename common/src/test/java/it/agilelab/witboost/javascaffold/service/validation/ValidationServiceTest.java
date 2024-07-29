@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test;
 
 public class ValidationServiceTest {
 
-    private final ValidationService service = new ValidationServiceImpl();
+    private final ValidationService service = new ValidationServiceImpl(
+            new StorageAreaValidation(), new WorkloadValidation(), new OutputPortValidation());
 
     @Test
     public void testValidateOutputPortFailureToImplement() throws IOException {

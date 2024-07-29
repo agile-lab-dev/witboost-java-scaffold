@@ -23,11 +23,24 @@ public class ValidationServiceImpl implements ValidationService {
 
     private final String OUTPUTPORT_KIND = "outputport";
     private final String STORAGE_KIND = "storage";
-
     private final String WORKLOAD_KIND = "workload";
+
+    private final StorageAreaValidation storageAreaValidation;
+    private final WorkloadValidation workloadValidation;
+    private final OutputPortValidation outputPortValidation;
+
     private static final Logger logger = LoggerFactory.getLogger(ValidationServiceImpl.class);
     private final Map<String, Class<? extends Specific>> kindToSpecificClass =
             Map.of(STORAGE_KIND, Specific.class, OUTPUTPORT_KIND, Specific.class, WORKLOAD_KIND, Specific.class);
+
+    public ValidationServiceImpl(
+            StorageAreaValidation storageAreaValidation,
+            WorkloadValidation workloadValidation,
+            OutputPortValidation outputPortValidation) {
+        this.storageAreaValidation = storageAreaValidation;
+        this.workloadValidation = workloadValidation;
+        this.outputPortValidation = outputPortValidation;
+    }
 
     @Override
     public Either<FailedOperation, ProvisionRequest<? extends Specific>> validate(
@@ -77,28 +90,33 @@ public class ValidationServiceImpl implements ValidationService {
                 logger.info("Parsing Storage Area Component");
                 var eitherStorageToProvision = Parser.parseComponent(componentToProvisionAsJson, storageClass);
                 if (eitherStorageToProvision.isLeft()) return left(eitherStorageToProvision.getLeft());
+
                 componentToProvision = eitherStorageToProvision.get();
-                var storageAreaValidation = StorageAreaValidation.validate(componentToProvision);
-                if (storageAreaValidation.isLeft()) return left(storageAreaValidation.getLeft());
+                var storageAreaValidationResult =
+                        storageAreaValidation.validate(descriptor.getDataProduct(), componentToProvision);
+                if (storageAreaValidationResult.isLeft()) return left(storageAreaValidationResult.getLeft());
                 break;
             case OUTPUTPORT_KIND:
                 var outputPortClass = kindToSpecificClass.get(OUTPUTPORT_KIND);
                 logger.info("Parsing Output Port Component");
                 var eitherOutputPortToProvision = Parser.parseComponent(componentToProvisionAsJson, outputPortClass);
                 if (eitherOutputPortToProvision.isLeft()) return left(eitherOutputPortToProvision.getLeft());
+
                 componentToProvision = eitherOutputPortToProvision.get();
-                var outputPortValidation =
-                        OutputPortValidation.validate(descriptor.getDataProduct(), componentToProvision);
-                if (outputPortValidation.isLeft()) return left(outputPortValidation.getLeft());
+                var outputPortValidationResult =
+                        outputPortValidation.validate(descriptor.getDataProduct(), componentToProvision);
+                if (outputPortValidationResult.isLeft()) return left(outputPortValidationResult.getLeft());
                 break;
             case WORKLOAD_KIND:
                 var workloadClass = kindToSpecificClass.get(WORKLOAD_KIND);
                 logger.info("Parsing Workload Component");
                 var eitherWorkloadToProvision = Parser.parseComponent(componentToProvisionAsJson, workloadClass);
                 if (eitherWorkloadToProvision.isLeft()) return left(eitherWorkloadToProvision.getLeft());
+
                 componentToProvision = eitherWorkloadToProvision.get();
-                var workloadValidation = WorkloadValidation.validate(descriptor.getDataProduct(), componentToProvision);
-                if (workloadValidation.isLeft()) return left(workloadValidation.getLeft());
+                var workloadValidationResult =
+                        workloadValidation.validate(descriptor.getDataProduct(), componentToProvision);
+                if (workloadValidationResult.isLeft()) return left(workloadValidationResult.getLeft());
                 break;
             default:
                 String errorMessage = String.format(

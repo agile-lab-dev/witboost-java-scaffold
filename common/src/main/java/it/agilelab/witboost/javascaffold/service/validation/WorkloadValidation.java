@@ -8,12 +8,16 @@ import it.agilelab.witboost.javascaffold.common.Problem;
 import it.agilelab.witboost.javascaffold.model.Component;
 import it.agilelab.witboost.javascaffold.model.DataProduct;
 import it.agilelab.witboost.javascaffold.model.Specific;
+import jakarta.validation.Valid;
 import java.util.Collections;
+import org.springframework.validation.annotation.Validated;
 
+@org.springframework.stereotype.Component
+@Validated
 public class WorkloadValidation {
 
-    public static Either<FailedOperation, Void> validate(
-            DataProduct dataProduct, Component<? extends Specific> component) {
+    public Either<FailedOperation, Void> validate(
+            DataProduct dataProduct, @Valid Component<? extends Specific> component) {
         // TODO Remember to implement the validation for the workload.
         return left(new FailedOperation(Collections.singletonList(
                 new Problem("Implement the validation for workload based on your requirements!"))));

@@ -3,6 +3,9 @@ package it.agilelab.witboost.javascaffold.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.Optional;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,10 +27,22 @@ import lombok.ToString;
 })
 public abstract class Component<T> {
 
+    @NotNull
     private String id;
+
+    @NotNull
     private String name;
+
     private Optional<String> fullyQualifiedName;
+
+    @NotNull
     private String description;
+
+    @NotNull
     private String kind;
-    private T specific;
+
+    @NotNull
+    private @Valid T specific;
+
+    private Optional<JsonNode> info;
 }

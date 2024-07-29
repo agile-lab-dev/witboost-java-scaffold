@@ -45,6 +45,11 @@
                 <artifactId>swagger-parser</artifactId>
                 <version>2.1.21</version>
             </dependency>
+            <dependency>
+                <groupId>org.zalando</groupId>
+                <artifactId>logbook-spring-boot-starter</artifactId>
+                <version>3.9.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -104,7 +109,7 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>9.0.9</version>
+                <version>10.0.3</version>
                 <configuration>
                     <failBuildOnCVSS>9</failBuildOnCVSS>
                     <suppressionFiles>

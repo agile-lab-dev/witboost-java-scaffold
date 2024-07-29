@@ -35,12 +35,16 @@ public class ApiServiceImpl {
     }
 
     public ProvisioningStatus provision(ProvisioningRequest provisioningRequest) {
-        throw new SpecificProvisionerValidationException(new FailedOperation(
-                Collections.singletonList(new Problem("Implement the provision logic based on your requirements!"))));
+        throw new SpecificProvisionerValidationException(
+                "Implement the provision logic based on your requirements!",
+                new FailedOperation(Collections.singletonList(
+                        new Problem("Implement the provision logic based on your requirements!"))));
     }
 
     public ProvisioningStatus unprovision(ProvisioningRequest provisioningRequest) {
-        throw new SpecificProvisionerValidationException(new FailedOperation(
-                Collections.singletonList(new Problem("Implement the unprovision logic based on your requirements!"))));
+        throw new SpecificProvisionerValidationException(
+                "Implement the unprovision logic based on your requirements!",
+                new FailedOperation(Collections.singletonList(
+                        new Problem("Implement the unprovision logic based on your requirements!"))));
     }
 }

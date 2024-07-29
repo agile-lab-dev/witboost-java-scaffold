@@ -1,10 +1,11 @@
 package it.agilelab.witboost.javascaffold.controller;
 
-import it.agilelab.witboost.javascaffold.common.Problem;
+import it.agilelab.witboost.javascaffold.common.ErrorBuilder;
 import it.agilelab.witboost.javascaffold.common.SpecificProvisionerValidationException;
 import it.agilelab.witboost.javascaffold.openapi.model.RequestValidationError;
 import it.agilelab.witboost.javascaffold.openapi.model.SystemError;
-import java.util.stream.Collectors;
+import jakarta.validation.ConstraintViolationException;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -28,18 +29,22 @@ public class SpecificProvisionerExceptionHandler {
     @ExceptionHandler({SpecificProvisionerValidationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     protected RequestValidationError handleValidationException(SpecificProvisionerValidationException ex) {
-        return new RequestValidationError(ex.getFailedOperation().problems().stream()
-                .map(Problem::description)
-                .collect(Collectors.toList()));
+        logger.error("Specific provisioner validation error", ex);
+        return ErrorBuilder.buildRequestValidationError(
+                Optional.ofNullable(ex.getMessage()), ex.getFailedOperation(), ex.getInput(), ex.getInputErrorField());
+    }
+
+    @ExceptionHandler({ConstraintViolationException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    protected RequestValidationError handleConflict(ConstraintViolationException ex) {
+        logger.error("Constraint violation Error", ex);
+        return ErrorBuilder.buildRequestValidationError(ex);
     }
 
     @ExceptionHandler({RuntimeException.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     protected SystemError handleSystemError(RuntimeException ex) {
-        String errorMessage = String.format(
-                "An unexpected error occurred while processing the request. Please try again later. If the issue still persists, contact the platform team for assistance! Details: %s",
-                ex.getMessage());
-        logger.error(errorMessage, ex);
-        return new SystemError(errorMessage);
+        logger.error("Runtime error", ex);
+        return ErrorBuilder.buildSystemError(Optional.empty(), ex);
     }
 }

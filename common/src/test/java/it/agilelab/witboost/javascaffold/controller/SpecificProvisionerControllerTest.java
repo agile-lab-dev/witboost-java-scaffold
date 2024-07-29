@@ -92,7 +92,7 @@ public class SpecificProvisionerControllerTest {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(mockHttpServletRequest));
         var failedOperation = new FailedOperation(Collections.singletonList(new Problem("error")));
         when(service.provision(provisioningRequest))
-                .thenThrow(new SpecificProvisionerValidationException(failedOperation));
+                .thenThrow(new SpecificProvisionerValidationException("Provision error", failedOperation));
 
         var ex = Assertions.assertThrows(
                 SpecificProvisionerValidationException.class,
@@ -125,7 +125,7 @@ public class SpecificProvisionerControllerTest {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(mockHttpServletRequest));
         var failedOperation = new FailedOperation(Collections.singletonList(new Problem("error")));
         when(service.unprovision(provisioningRequest))
-                .thenThrow(new SpecificProvisionerValidationException(failedOperation));
+                .thenThrow(new SpecificProvisionerValidationException("Unprovision error", failedOperation));
 
         var ex = Assertions.assertThrows(
                 SpecificProvisionerValidationException.class,

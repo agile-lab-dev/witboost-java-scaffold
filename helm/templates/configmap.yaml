@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   labels:
   {{- include "javasp.labels" . | nindent 4 }}
-name: {{ template "javasp.fullname" . }}-config
+  name: {{ template "javasp.fullname" . }}-config
 data:
   application.yml: |
   {{- if .Values.configOverride -}}
