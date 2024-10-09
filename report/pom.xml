@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>it.agilelab.witboost</groupId>
+        <groupId>com.witboost.provisioning</groupId>
         <artifactId>scaffold</artifactId>
         <version>${env.PROVISIONER_VERSION}</version>
     </parent>
@@ -23,9 +23,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>it.agilelab.witboost</groupId>
+            <groupId>com.witboost.provisioning</groupId>
             <artifactId>common</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${env.PROVISIONER_VERSION}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -38,8 +38,7 @@
                 <version>0.8.7</version>
                 <configuration>
                     <excludes>
-                        <exclude>it/agilelab/witboost/javascaffold/openapi/**</exclude>
-                        <exclude>it/agilelab/witboost/javascaffold/Main.class</exclude>
+                        <exclude>com/witboost/provisioning/javascaffold/Main.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -61,6 +60,4 @@
             </plugin>
         </plugins>
     </build>
-
-
 </project>

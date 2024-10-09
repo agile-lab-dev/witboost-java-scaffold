@@ -15,23 +15,23 @@ This repository is part of our [Starter Kit](https://github.com/agile-lab-dev/wi
 - [Running](#running)
 - [OpenTelemetry Setup](docs/opentelemetry.md)
 - [Deploying](#deploying)
-- [API specification](docs/API.md)
 
 
 ## Overview
 
-This project provides a scaffold to develop a Specific Provisioner from scratch using Java & SpringBoot.
+This project provides a scaffold to develop a Tech Adapter from scratch using Java & SpringBoot leveraging the [Java Tech Adapter Framework](https://github.com/agile-lab-dev/witboost-java-tech-adapter-framework).
 
-### What's a Specific Provisioner?
+### What's a Tech Adapter?
 
-A Specific Provisioner is a microservice which is in charge of deploying components that use a specific technology. When the deployment of a Data Product is triggered, the platform generates it descriptor and orchestrates the deployment of every component contained in the Data Product. For every such component the platform knows which Specific Provisioner is responsible for its deployment, and can thus send a provisioning request with the descriptor to it so that the Specific Provisioner can perform whatever operation is required to fulfill this request and report back the outcome to the platform.
+A Tech Adapter (formerly a Specific Provisioner) is a microservice which is in charge of deploying components that use a specific technology. When the deployment of a Data Product is triggered, the platform generates it descriptor and orchestrates the deployment of every component contained in the Data Product. For every such component the platform knows which Tech Adapter is responsible for its deployment, and can thus send a provisioning request with the descriptor to it so that the Tech Adapter can perform whatever operation is required to fulfill this request and report back the outcome to the platform.
 
-You can learn more about how the Specific Provisioners fit in the broader picture [here](https://docs.witboost.com/docs/p2_arch/p1_intro/#deploy-flow).
+You can learn more about how the Tech Adapters fit in the broader picture [here](https://docs.witboost.com/docs/p2_arch/p1_intro/#deploy-flow).
 
 ### Software stack
 
-This microservice is written in Java 17, using SpringBoot for the HTTP layer. Project is built with Apache Maven and supports packaging and Docker image, ideal for Kubernetes deployments (which is the preferred option).
+This microservice is written in Java 17, using SpringBoot for the HTTP layer supported by the Java Tech Adapter Framework. Project is built with Apache Maven and supports packaging and Docker image, ideal for Kubernetes deployments (which is the preferred option).
 
+The API layer is handled by the framework and follows this [OpenAPI Specification](https://github.com/agile-lab-dev/witboost-java-tech-adapter-framework/tree/master/core/src/main/resources/interface-specification.yml).
 
 ### Git hooks
 
@@ -103,8 +103,6 @@ export PROVISIONER_VERSION=0.0.0-SNAPHSOT
 
 **Build:**
 
-The scaffold uses the `openapi-generator` Maven plugin to generate the API endpoints from the interface specification located in `src/main/resources/interface-specification.yml`. For more information on the documentation, check [API docs](docs/API.md).
-
 ```bash
 mvn compile
 ```
@@ -150,11 +148,14 @@ export PROVISIONER_VERSION=$(date +%Y%m%d-%H%M%S);
 
 ### Implementing server logic
 
-The Java Scaffold utilizes the `openapi-generator` Maven plugin to generate the Spring endpoint methods from the interface specification located in `src/main/resources/interface-specification.yml`. The files are generated at compile/build time, so they can't be modified as they'd be rewritten everytime you build the application. You can find the generated sources at `common/target/generated-sources/openapi/src/main/java`.
+The Java Scaffold utilizes the Java Tech Adapter Framework, which provides abstraction of the API layer, error handling, model definition, and more; allowing Tech Adapter developers to focus only on implementing the specific business logic related to the technology for which the Tech Adapter is being developed. For this, four interfaces need to be implemented and injected via Spring beans in order to make your Tech Adapter work:
 
-The generated files include one Java interface per each existing endpoint version. That is, for `/v1` endpoints it will generate the `V1ApiDelegate.java` interface containing all endpoints starting with `/v1`, for `/v2` the `V2ApiDelegate.java` and so on. The interface defaults the endpoints to answer with 501 Not Implemented unless overridden. We provide a class `it.agilelab.witboost.javascaffold.controller.SpecificProvisionerController` as an example class with one overridden method. To implement the specific provisioner logic, implement the necessary methods and start developing.
+- **ProvisionService**: Provides the business logic for component provision, unprovision, update access control, and reverse provisioning.
+- **ComponentValidationService**: Provides the business logic for component validation, executed for validation and (un)provisioning operations.
+- **ComponentClassProvider**: Interface that maps a component's useCaseTemplateId with a Class that represents the Component model, allowing to use extensions of the provided Components.
+- **SpecificClassProvider**: Interface that maps a component's useCaseTemplateId with a Class that represents the Specific model.
 
-Exceptions are handled using Spring `@RestControllerAdvice` annotation. We provide a basic implementation on `it.agilelab.witboost.javascaffold.controller.SpecificProvisionerExceptionHandler` which handles both business and runtime exceptions, but be free to modify this exception handler based on your business requirements.
+Follow the Java Tech Adapter Framework [usage guide](https://github.com/agile-lab-dev/witboost-java-tech-adapter-framework/tree/master/docs/usage.md) for more information on how to develop your Tech Adapter.
 
 ## Running
 

@@ -72,9 +72,9 @@ This will run the collector and all other services. With the agent setup and con
 If you want to test locally using Docker, you can use the local machine hostname as the endpoint for the telemetry exporter, like this:
 
 ```bash
-docker run --name java-sp-container \
+docker run --name java-ta-container \
 -e OTEL_EXPORTER_OTLP_ENDPOINT=http://$(hostname -f):5555 \
--p 8888:8888 java-specific-provisioner
+-p 8888:8888 java-tech-adapter
 ```
 
 ### Grafana
